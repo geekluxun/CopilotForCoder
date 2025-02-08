@@ -1,0 +1,8 @@
+langchain
+langchain-ollama
+langchain_experimental
+langchain_community
+langgraph
+ipython
+matplotlib
+pydantic
