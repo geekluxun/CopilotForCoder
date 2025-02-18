@@ -12,6 +12,7 @@ from CopilotForCoder.agent.llm_privider import getLLM
 from CopilotForCoder.agent.tools.python_repl_tool import python_repl_tool
 
 
+# docstrings和description用自然语言描述，提升llm结构化输出的准确性
 class Code(BaseModel):
     """生成的代码，包括import语句，代码块"""
     imports: str = Field(description="import语句")
