@@ -10,11 +10,16 @@ if "OLLAMA_DEBUG" not in os.environ:
 
 
 def getLLM():
-    # llm = ChatOpenAI(model_name="gpt-4-turbo",
-    #                  base_url="http://127.0.0.1:8080/")
     llm = ChatOllama(
         model="qwen2.5-coder:7b",
         temperature=0,
         # other params...
     )
     return llm
+
+
+def getEmbedding():
+    from langchain_ollama import OllamaEmbeddings
+    # 向量的维数如何设置？
+    embeddings_model = OllamaEmbeddings(model="quentinz/bge-large-zh-v1.5")
+    return embeddings_model

@@ -6,3 +6,9 @@ langgraph
 ipython
 matplotlib
 pydantic
+pydantic-settings
+pillow
+chromadb
+langgraph-checkpoint-sqlite
+langgraph-checkpoint-postgres
+aiosqlite
