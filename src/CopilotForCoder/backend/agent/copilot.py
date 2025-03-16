@@ -6,11 +6,11 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.constants import END
 from langgraph.graph import StateGraph
 
-from CopilotForCoder.agent.code_gen import CodeGenAgent
-from CopilotForCoder.agent.code_test import CodeTestAgent
-from CopilotForCoder.util.llm_privider import getLLM
-from CopilotForCoder.memory.copilot_state import CopilotState
-from CopilotForCoder.util.display_graph import display_graph
+from CopilotForCoder.backend.agent.code_gen import CodeGenAgent
+from CopilotForCoder.backend.agent.code_test import CodeTestAgent
+from CopilotForCoder.backend.memory.copilot_state import CopilotState
+from CopilotForCoder.backend.util.display_graph import display_graph
+from CopilotForCoder.backend.util.llm_privider import getLLM
 
 
 class ChiefAgent:
@@ -19,7 +19,7 @@ class ChiefAgent:
         self.task_id = self._generate_task_id()
         self.llm = getLLM()
         self.user_id = user_id
-        memory = AsyncSqliteSaver(conn=aiosqlite.connect("../../../temp/sqllite/copilotForCode.db"))
+        memory = AsyncSqliteSaver(conn=aiosqlite.connect("/Users/luxun/workspace/ai/mine/project/open/CopilotForCoder/temp/sqllite/copilotForCode.db"))
         research_team = self.init_research_team()
         self.graph = research_team.compile(checkpointer=memory)
         display_graph(self.graph)

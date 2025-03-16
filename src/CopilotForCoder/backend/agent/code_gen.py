@@ -2,7 +2,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
-from CopilotForCoder.memory.copilot_state import CopilotState
+from CopilotForCoder.backend.memory.copilot_state import CopilotState
 
 
 class Code(BaseModel):
@@ -20,7 +20,7 @@ class CodeGenAgent:
         print("CodeGenAgent run", state["task"])
 
         messages = [
-            SystemMessage(content="你是一个代码助手。根据用户的需求写一个代码(需要包含必要的import语句)，同时写出单元测试代码"),
+            SystemMessage(content="你是一个代码助手。根据用户的需求写一个代码,要求1.包含完整的import语句, 2.包含单元测试代码, 3.如果有需要安装的pip包在第一行以“#REQUIRES pacakgeName”形式返回"),
             HumanMessage(content=state["task"]["prompt"])
         ]
         result = self.code_gen.invoke(messages)

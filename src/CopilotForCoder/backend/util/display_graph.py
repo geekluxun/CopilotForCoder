@@ -13,7 +13,7 @@ def display_graph(graph: StateGraph, jupyter=False):
             )
         )
     else:
-        img_path = "../../../temp/graph.png"
+        img_path = "graph.png"
         graph.get_graph().draw_mermaid_png(draw_method=MermaidDrawMethod.API, output_file_path=img_path)
 
 

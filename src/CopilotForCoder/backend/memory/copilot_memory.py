@@ -8,7 +8,7 @@ from psycopg import Connection
 
 
 async def query_memory(thread_id):
-    memory_saver = AsyncSqliteSaver(conn=aiosqlite.connect("/Users/luxun/workspace/ai/mine/project/open/CopilotForCoder/temp/sqllite/copilotForCode.db"))
+    memory_saver = AsyncSqliteSaver(conn=aiosqlite.connect("/temp/sqllite/copilotForCode.db"))
     c = await memory_saver.aget(config={"configurable": {"thread_id": thread_id}})
     print(c)
     return c
