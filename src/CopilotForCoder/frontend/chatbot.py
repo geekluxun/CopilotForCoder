@@ -1,70 +1,100 @@
+from typing import Tuple
+
 import gradio as gr
 import requests
 
-# FastAPI 接口地址
 API_URL = "http://127.0.0.1:8000/chat"
 
 
-# 用于保存多轮对话的历史
-def chatbot(user_input, history):
+def chatbot(user_input: str, history: list, session_id: str) -> Tuple[list, list, str]:
     """
-    将用户输入和历史消息打包成OpenAI所需的messages格式，
-    发给后端的FastAPI接口，然后拿到回复。
+    处理聊天逻辑，维护session_id
     """
-    # Gradio里，history 通常是 [[user1, bot1], [user2, bot2], ...]
-    # 我们需要把它转成 OpenAI ChatCompletion 所需的格式:
-    # [
-    #   {"role": "user", "content": "你好"},
-    #   {"role": "assistant", "content": "你好!有什么可以帮你的吗?"},
-    #   ...
-    # ]
-    messages = []
-    for pair in history:
-        # pair[0] 是用户的内容，pair[1] 是机器人的回复
-        messages.append({"role": "user", "content": pair[0]})
-        messages.append({"role": "assistant", "content": pair[1]})
+    # 构造请求体
+    payload = {
+        "messages": [{"role": "user", "content": user_input}]
+    }
 
-    # 现在，把最新一轮的 user_input 加进 messages
-    messages.append({"role": "user", "content": user_input})
+    # 如果存在session_id则添加
+    if session_id:
+        payload["session_id"] = session_id
 
-    # 向 FastAPI 后端发送请求
     try:
-        response = requests.post(API_URL, json={"messages": messages})
+        response = requests.post(API_URL, json=payload)
         result = response.json()
-        if "reply" in result:
-            reply = result["reply"]
-        else:
-            reply = "出现错误: " + str(result.get("error", "Unknown Error"))
-    except Exception as e:
-        reply = f"请求后端出现异常: {str(e)}"
 
-    # 返回给 Gradio
-    # Gradio 需要一个 (reply, history) 的元组
-    # 其中 reply 是机器人新回复，history 需要把最新对话append进去
-    history.append((user_input, reply))
-    return history, history
+        # 处理正常响应
+        if response.status_code == 200:
+            new_session_id = result.get("session_id", "")
+            reply = result.get("reply", "收到空回复")
+
+            # 更新session_id（如果是新会话）
+            if not session_id and new_session_id:
+                session_id = new_session_id
+
+            # 追加到历史记录
+            history.append((user_input, reply))
+
+            return history, history, session_id
+
+        # 处理错误响应
+        error_msg = result.get("detail", "未知错误")
+        reply = f"请求失败: {error_msg}"
+        history.append((user_input, reply))
+        return history, history, session_id
+
+    except Exception as e:
+        error_reply = f"请求异常: {str(e)}"
+        history.append((user_input, error_reply))
+        return history, history, session_id
 
 
 def main():
     with gr.Blocks() as demo:
-        gr.Markdown("# ChatGPT-like Chatbot with FastAPI & Gradio")
+        gr.Markdown("# 代码生成助手")
 
-        # 设置对话展示
-        chatbot_ui = gr.Chatbot(label="ChatGPT-like Bot")
+        # 隐藏状态存储
+        session_state = gr.State("")  # 保存session_id
+        history_state = gr.State([])  # 保存对话历史
 
-        # 输入框
-        message = gr.Textbox(label="请输入内容")
+        # 聊天界面
+        chatbot_ui = gr.Chatbot(label="对话记录", height=500)
+        msg_input = gr.Textbox(label="输入消息", placeholder="请输入需求或反馈...")
 
-        # 隐藏态，存储对话历史
-        state = gr.State([])  # 这里保存的是history
+        # 控制按钮
+        with gr.Row():
+            send_btn = gr.Button("发送", variant="primary")
+            new_chat_btn = gr.Button("新对话")
 
-        # 点击“发送”后执行chatbot函数
-        send_btn = gr.Button("发送")
-        send_btn.click(chatbot, inputs=[message, state], outputs=[chatbot_ui, state])
+        # 事件处理
+        def new_chat():
+            """重置会话"""
+            return [], [], ""
+
+        send_btn.click(
+            chatbot,
+            inputs=[msg_input, history_state, session_state],
+            outputs=[chatbot_ui, history_state, session_state]
+        )
+
+        new_chat_btn.click(
+            new_chat,
+            outputs=[chatbot_ui, history_state, session_state]
+        )
+
+        msg_input.submit(
+            chatbot,
+            inputs=[msg_input, history_state, session_state],
+            outputs=[chatbot_ui, history_state, session_state]
+        )
 
     return demo
 
 
 if __name__ == "__main__":
     demo = main()
-    demo.launch(server_name="0.0.0.0", server_port=7860, debug=True)
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False
+    )
