@@ -2,12 +2,12 @@ import os
 
 import uvicorn
 from fastapi import FastAPI
-from langchain.globals import set_debug
+from langchain.globals import set_debug, set_verbose
 
 from CopilotForCoder.backend.api.endpoints.chat import chat_router
 
 set_debug(True)
-
+set_verbose(True)
 app = FastAPI()
 app.include_router(chat_router, tags=["chat"])
 
