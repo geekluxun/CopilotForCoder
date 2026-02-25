@@ -1,0 +1,14 @@
+langchain
+langchain-ollama
+langchain_experimental
+langchain_community
+langgraph
+ipython
+matplotlib
+pydantic
+pydantic-settings
+pillow
+chromadb
+langgraph-checkpoint-sqlite
+langgraph-checkpoint-postgres
+aiosqlite
